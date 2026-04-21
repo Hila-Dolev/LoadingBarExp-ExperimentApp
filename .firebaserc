@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "loadingbarexp"
-  }
+  },
+  "targets": {
+    "loadingbarexp": {
+      "hosting": {
+        "research-site": [
+          "visual-memory-study"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

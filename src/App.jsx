@@ -358,9 +358,8 @@ function CoverStoryScreen({ onNext }) {
     <div className="flex-grow flex flex-col justify-center items-center text-center">
       <h2 className="text-4xl font-bold mb-6 text-gray-900">מבחן זיכרון חזותי</h2>
       <p className="text-xl text-gray-700 mb-12 max-w-lg leading-relaxed">
-        מיד תתחיל/י במטלת הזיכרון החזותי. במסך הבא המערכת תטען את הגירוי.
-        <br/><br/>
-        <strong>אנא המתן/י בסבלנות בזמן שהמערכת טוענת את תוכן המבחן...</strong>
+        מיד תתחיל/י במטלת הזיכרון החזותי.
+      
       </p>
       <button 
         onClick={onNext}
