@@ -241,7 +241,7 @@ function ConsentScreen({ onNext }) {
         <div className="pt-4 border-t border-gray-300">
           <h3 className="font-bold mb-2">פנייה לצורך שאלות</h3>
           <p>שמות החוקרים: הילה דולב אדלר</p>
-          <p>טלפון לפניות: 6306811</p>
+          <p>טלפון לפניות: 0506306811</p>
           <p>כתובת דוא"ל: hiladolev.w@gmail.com</p>
           <br/>
           <p>בהערכה רבה,<br/>ביה"ס למדעי הפסיכולוגיה אוניברסיטת חיפה. הר הכרמל, חיפה 31905</p>
@@ -370,11 +370,10 @@ function DemographicsScreen({ formData, updateFormData, onNext }) {
 function CoverStoryScreen({ onNext }) {
   return (
     <div className="flex-grow flex flex-col justify-center items-center text-center">
-      <h2 className="text-4xl font-bold mb-6 text-gray-900">מבחן זיכרון שפתי</h2>
+      <h2 className="text-4xl font-bold mb-6 text-gray-900">מבחן זיכרון</h2>
       <p className="text-xl text-gray-700 mb-12 max-w-lg leading-relaxed">
         מיד תתחיל/י במטלת הזיכרון. המסך יטען ולאחר מכן יוצג בפניך סיפור קצר.
-        קרא/י אותו בעיון, שכן מיד לאחר מכן תישאל/י עליו מספר שאלות.
-      </p>
+        כדאי לשים לב לפרטים בסיפור – בסיום הקריאה יופיעו מספר שאלות קצרות      </p>
       <button 
         onClick={onNext}
         className="bg-blue-600 text-white px-12 py-4 rounded-lg font-bold text-xl hover:bg-blue-700 transition shadow-lg"
@@ -439,13 +438,13 @@ function MemoryTaskScreen({ formData, updateFormData, onNext }) {
       <div className="flex-grow flex flex-col justify-center">
         <h2 className="text-2xl font-bold mb-6 text-center">קרא/י את הסיפור הבא:</h2>
         <div className="bg-gray-50 p-8 rounded-xl border border-gray-200 shadow-sm text-xl leading-relaxed text-justify mb-10">
-          "ביום שלישי בבוקר, יצא דן מדירתו לכיוון בית הקפה השכונתי 'קפה על הדרך'. בחוץ נשבה רוח קרירה, ולכן הוא לבש את מעילו הכחול. כשהגיע, הוא הזמין קפה הפוך קטן ומאפה קינמון. דן התיישב בשולחן הפינתי הקבוע שלו, קרא בעיתון הספורט במשך 20 דקות, ולאחר מכן המשיך בדרכו למשרד."
+          ביום שלישי בבוקר, יצא דן מדירתו לכיוון בית הקפה השכונתי 'קפה על הדרך'. בחוץ נשבה רוח קרירה, ולכן הוא לבש את מעילו הכחול. כשהגיע, הוא הזמין קפה הפוך קטן ומאפה קינמון. דן התיישב בשולחן הפינתי הקבוע שלו, קרא בעיתון הספורט במשך 20 דקות, ולאחר מכן המשיך בדרכו למשרד.
         </div>
         <button 
           onClick={() => setStep('questions')}
           className="w-full bg-blue-600 text-white font-bold py-4 rounded-lg text-xl hover:bg-blue-700 transition shadow-md"
         >
-          סיימתי לקרוא, עבור לשאלות
+          סיימתי לקרוא
         </button>
       </div>
     );
@@ -492,11 +491,10 @@ function TimeEstimationScreen({ formData, updateFormData, onNext }) {
 
   return (
     <div className="flex-grow flex flex-col justify-center">
-      <h2 className="text-3xl font-bold mb-10 text-center">הערכת זמן</h2>
       <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto space-y-8 bg-gray-50 p-8 rounded-xl border border-gray-200 shadow-sm">
         <div>
           <label className="block font-semibold mb-6 text-xl text-center leading-relaxed">
-            לפני שניגש לתוצאות מבחן הזיכרון, כמה שניות לדעתך ארכה הטעינה לפני שהסיפור הופיע?
+            לפני שניגש לתוצאות, כמה שניות לדעתך ארכה הטעינה לפני שהסיפור הופיע?
           </label>
           <input 
             type="number" 
