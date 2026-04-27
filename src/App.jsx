@@ -15,19 +15,24 @@ const getRandomCondition = () => CONDITIONS[Math.floor(Math.random() * CONDITION
 const generateParticipantId = () => Math.random().toString(36).substring(2, 10);
 
 export default function App() {
-  // Application phases: consent, demographics, cover_story, stimulus, time_estimation, manipulation_check, suspicion_check, debriefing
+  // Application phases: consent, demographics, cover_story, stimulus, memory_task, time_estimation, manipulation_check, suspicion_check, debriefing
   const [phase, setPhase] = useState('consent');
   const [participantData, setParticipantData] = useState({
     id: '',
     condition: null
   });
 
-  // Centralized state holding all user inputs
+  // Centralized state holding all user inputs, including the 5 memory task questions
   const [formData, setFormData] = useState({
     age: '',
     gender: '',
     noVisionIssues: false,
     noAdhd: false,
+    q1: '',
+    q2: '',
+    q3: '',
+    q4: '',
+    q5: '',
     estimatedTime: '',
     uniformSpeed: '',
     colorSeen: '',
@@ -93,6 +98,14 @@ export default function App() {
         {phase === 'stimulus' && (
           <StimulusScreen 
             condition={participantData.condition} 
+            onNext={() => setPhase('memory_task')} 
+          />
+        )}
+
+        {phase === 'memory_task' && (
+          <MemoryTaskScreen 
+            formData={formData} 
+            updateFormData={updateFormData} 
             onNext={() => setPhase('time_estimation')} 
           />
         )}
@@ -147,7 +160,7 @@ function ConsentScreen({ onNext }) {
     if (!scrollRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
     
-    // Add a 5px buffer to account for rounding errors in different browsers/zoom levels
+    // Add a 5px buffer to account for rounding errors
     if (scrollTop + clientHeight >= scrollHeight - 5) {
       setHasScrolledToBottom(true);
     }
@@ -165,23 +178,21 @@ function ConsentScreen({ onNext }) {
 
   return (
     <div className="flex-grow flex flex-col">
-      <h2 className="text-2xl font-bold mb-4 border-b pb-4 text-center">טופס הסכמה מדעת להשתתפות במחקר</h2>
+      <h2 className="text-2xl font-bold mb-4 border-b pb-4 text-center">טופס פנייה להשתתפות במחקר והסכמה מדעת</h2>
 
-      {/* Download button */}
       <div className="flex justify-end mb-2">
         <a
-          href="/consent-form.pdf" // Make sure to put consent-form.pdf in the public folder
+          href="/consent-form.pdf"
           download="טופס_הסכמה_מדעת.pdf"
           className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition font-semibold"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           הורד עותק למחשב (PDF)
         </a>
       </div>
 
-      {/* Scrollable Document Container */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -189,7 +200,7 @@ function ConsentScreen({ onNext }) {
       >
         <div>
           <h3 className="font-bold mb-1 text-lg">1. הזמנה להשתתפות:</h3>
-          <p>שלום רב,<br/>אנו מבקשים ממך להשתתף במחקר בשם: "השפעת מאפיינים דיגיטליים על תפיסה וזיכרון חזותי" אשר מטרתו היא ללמוד על האופן שבו בני אדם מעבדים מידע חזותי וזוכרים אותו. השתתפותך במחקר עשויה לתרום בצורה משמעותית להבנת הנושא.</p>
+          <p>שלום רב,<br/>אנו מבקשים ממך להשתתף במחקר בשם: "השפעת מאפיינים דיגיטליים על תפיסה וזיכרון" אשר מטרתו היא ללמוד על האופן שבו בני אדם מעבדים מידע חזותי וזוכרים אותו. השתתפותך במחקר עשויה לתרום בצורה משמעותית להבנת הנושא. המחקר נערך במסגרת קורס "פסיכולוגיה ניסויית" תחת החוג למדעי הקוגניציה בבית הספר לפסיכולוגיה.</p>
         </div>
         
         <div>
@@ -204,7 +215,7 @@ function ConsentScreen({ onNext }) {
 
         <div>
           <h3 className="font-bold mb-1 text-lg">4. האם ישנם סיכונים/חוסר נוחות שעשויים להתלוות להשתתפות במחקר?</h3>
-          <p>הסיכונים/חוסר נוחות הנלווים להשתתפות במחקר הינם מזעריים.</p>
+          <p>הסיכונים/חוסר נוחות הנלווים להשתתפות במחקר הינם מזעריים. בכל מקרה של אי נוחות ניתן לפנות לעורכת המחקר.</p>
         </div>
 
         <div>
@@ -218,21 +229,25 @@ function ConsentScreen({ onNext }) {
         </div>
 
         <div> 
-          <h3 className="font-bold mb-1 text-lg">7. שמירה על סודיות:</h3>
-          <p>כל הנתונים המזהים במחקר ישמרו חסויים ולא יהיו זמינים לאף אחד מלבד צוות המחקר.</p>
+          <h3 className="font-bold mb-1 text-lg">7. תגמול:</h3>
+          <p>המחקר מתבצע על בסיס התנדבותי.</p>
+        </div>
+
+        <div> 
+          <h3 className="font-bold mb-1 text-lg">8. שמירה על סודיות:</h3>
+          <p>כל הנתונים המזהים במחקר ישמרו חסויים ולא יהיו זמינים לאף אחד מלבד צוות המחקר. לא נאספים פרטים מזהים על הנבדקים.</p>
         </div>
 
         <div className="pt-4 border-t border-gray-300">
           <h3 className="font-bold mb-2">פנייה לצורך שאלות</h3>
           <p>שמות החוקרים: הילה דולב אדלר</p>
-          <p>טלפון לפניות: 0506306811</p>
+          <p>טלפון לפניות: 6306811</p>
           <p>כתובת דוא"ל: hiladolev.w@gmail.com</p>
           <br/>
-          <p>בהערכה רבה,<br/>צוות המחקר</p>
+          <p>בהערכה רבה,<br/>ביה"ס למדעי הפסיכולוגיה אוניברסיטת חיפה. הר הכרמל, חיפה 31905</p>
         </div>
       </div>
 
-      {/* Checkbox */}
       <div className="mb-6">
         <label 
           className={`flex items-start gap-4 p-4 rounded-lg border transition-all ${
@@ -276,7 +291,6 @@ function DemographicsScreen({ formData, updateFormData, onNext }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Validate that both health declarations are checked
     if (!formData.noVisionIssues || !formData.noAdhd) {
       setError(true);
       return;
@@ -356,10 +370,10 @@ function DemographicsScreen({ formData, updateFormData, onNext }) {
 function CoverStoryScreen({ onNext }) {
   return (
     <div className="flex-grow flex flex-col justify-center items-center text-center">
-      <h2 className="text-4xl font-bold mb-6 text-gray-900">מבחן זיכרון חזותי</h2>
+      <h2 className="text-4xl font-bold mb-6 text-gray-900">מבחן זיכרון שפתי</h2>
       <p className="text-xl text-gray-700 mb-12 max-w-lg leading-relaxed">
-        מיד תתחיל/י במטלת הזיכרון החזותי.
-      
+        מיד תתחיל/י במטלת הזיכרון. המסך יטען ולאחר מכן יוצג בפניך סיפור קצר.
+        קרא/י אותו בעיון, שכן מיד לאחר מכן תישאל/י עליו מספר שאלות.
       </p>
       <button 
         onClick={onNext}
@@ -375,7 +389,7 @@ function StimulusScreen({ condition, onNext }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
-    // Fallback: If video fails to load or play within 13 seconds, skip to prevent user getting stuck
+    // Fallback timer
     const safetyTimer = setTimeout(() => {
       console.warn("Safety timeout. Video might be missing.");
       onNext();
@@ -386,7 +400,6 @@ function StimulusScreen({ condition, onNext }) {
 
   return (
     <div className="flex-grow flex flex-col justify-center items-center w-full h-full bg-white relative">
-      {/* Video element: hidden controls, unclickable, auto plays */}
       <video
         ref={videoRef}
         src={condition?.videoUrl}
@@ -396,11 +409,77 @@ function StimulusScreen({ condition, onNext }) {
         onEnded={onNext}
         onError={(e) => {
           console.error("Video error:", e);
-          onNext(); // Skip on error
+          onNext(); 
         }}
         className="w-full max-w-4xl h-auto object-contain"
         style={{ pointerEvents: 'none' }} 
       />
+    </div>
+  );
+}
+
+function MemoryTaskScreen({ formData, updateFormData, onNext }) {
+  const [step, setStep] = useState('story'); // 'story' or 'questions'
+
+  const questions = [
+    { id: 'q1', text: 'לאן דן הלך בבוקר?', options: ['לסופרמרקט', 'לבית קפה', 'לפארק', 'לבנק'] },
+    { id: 'q2', text: 'מה דן הזמין לאכול?', options: ['עוגת שוקולד', 'כריך גבינה', 'מאפה קינמון', 'עוגיות חמאה'] },
+    { id: 'q3', text: 'באיזה צבע היה המעיל של דן?', options: ['שחור', 'אפור', 'כחול', 'ירוק'] },
+    { id: 'q4', text: 'באיזה יום בשבוע התרחש הסיפור?', options: ['ראשון', 'שני', 'שלישי', 'רביעי'] },
+    { id: 'q5', text: 'כמה זמן ישב דן לפני שהמשיך למשרד?', options: ['10 דקות', '15 דקות', '20 דקות', '30 דקות'] }
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onNext();
+  };
+
+  if (step === 'story') {
+    return (
+      <div className="flex-grow flex flex-col justify-center">
+        <h2 className="text-2xl font-bold mb-6 text-center">קרא/י את הסיפור הבא:</h2>
+        <div className="bg-gray-50 p-8 rounded-xl border border-gray-200 shadow-sm text-xl leading-relaxed text-justify mb-10">
+          "ביום שלישי בבוקר, יצא דן מדירתו לכיוון בית הקפה השכונתי 'קפה על הדרך'. בחוץ נשבה רוח קרירה, ולכן הוא לבש את מעילו הכחול. כשהגיע, הוא הזמין קפה הפוך קטן ומאפה קינמון. דן התיישב בשולחן הפינתי הקבוע שלו, קרא בעיתון הספורט במשך 20 דקות, ולאחר מכן המשיך בדרכו למשרד."
+        </div>
+        <button 
+          onClick={() => setStep('questions')}
+          className="w-full bg-blue-600 text-white font-bold py-4 rounded-lg text-xl hover:bg-blue-700 transition shadow-md"
+        >
+          סיימתי לקרוא, עבור לשאלות
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-grow flex flex-col">
+      <h2 className="text-2xl font-bold mb-6 border-b pb-4">מבחן זיכרון: ענה/י על השאלות הבאות</h2>
+      <form onSubmit={handleSubmit} className="flex-grow space-y-8">
+        {questions.map((q, index) => (
+          <div key={q.id} className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <label className="block font-semibold mb-4 text-lg">{index + 1}. {q.text}</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {q.options.map(option => (
+                <label key={option} className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-lg border border-gray-300 hover:bg-blue-50 transition">
+                  <input 
+                    type="radio" 
+                    name={q.id} 
+                    value={option} 
+                    required 
+                    checked={formData[q.id] === option} 
+                    onChange={e => updateFormData({ [q.id]: e.target.value })} 
+                    className="w-5 h-5 text-blue-600" 
+                  /> 
+                  <span className="text-lg">{option}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+        <button type="submit" className="w-full bg-gray-800 text-white font-bold py-4 rounded-lg text-xl hover:bg-gray-700 transition shadow-md">
+          המשך
+        </button>
+      </form>
     </div>
   );
 }
@@ -417,7 +496,7 @@ function TimeEstimationScreen({ formData, updateFormData, onNext }) {
       <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto space-y-8 bg-gray-50 p-8 rounded-xl border border-gray-200 shadow-sm">
         <div>
           <label className="block font-semibold mb-6 text-xl text-center leading-relaxed">
-            לפני שנתחיל במבחן הזיכרון, כמה שניות לדעתך ארכה הטעינה?
+            לפני שניגש לתוצאות מבחן הזיכרון, כמה שניות לדעתך ארכה הטעינה לפני שהסיפור הופיע?
           </label>
           <input 
             type="number" 
@@ -512,7 +591,7 @@ function SuspicionCheckScreen({ formData, updateFormData, onNext }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    onNext(); // App component handles the Google Sheets API call
+    onNext(); 
   };
 
   return (
@@ -564,7 +643,7 @@ function DebriefingScreen() {
         <p>
           בניסוי זה בדקנו כיצד מאפיינים שונים של "בר טעינה" (כגון קצב התקדמותו והצבע שלו) משפיעים על האופן שבו אנשים מעריכים את משך הזמן שחלף.         </p>
         <p>
-          השימוש ב"סיפור הכיסוי" של מבחן זיכרון היה הכרחי כדי לא להפנות את תשומת ליבך באופן מכוון לזמן שעובר, ובכך לאפשר מדידה טבעית ככל האפשר של תפיסת הזמן.
+          השימוש ב"סיפור הכיסוי" של מבחן הזיכרון השפתי (הסיפור על דן) היה הכרחי כדי לא להפנות את תשומת ליבך באופן מכוון לזמן שעובר בעת הטעינה, ובכך לאפשר מדידה טבעית ככל האפשר של תפיסת הזמן.
         </p>
         <p className="pt-6 font-bold text-center text-green-700 border-t border-gray-300 mt-4">
           הנתונים נשמרו בהצלחה. כעת ניתן לסגור חלון זה.
