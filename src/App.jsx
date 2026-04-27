@@ -15,15 +15,16 @@ const getRandomCondition = () => CONDITIONS[Math.floor(Math.random() * CONDITION
 const generateParticipantId = () => Math.random().toString(36).substring(2, 10);
 
 export default function App() {
-  // Application phases: consent, demographics, cover_story, stimulus, memory_task, time_estimation, manipulation_check, suspicion_check, debriefing
+  // Application phases
   const [phase, setPhase] = useState('consent');
   const [participantData, setParticipantData] = useState({
     id: '',
     condition: null
   });
 
-  // Centralized state holding all user inputs, including the 5 memory task questions
+  // Centralized state holding all user inputs
   const [formData, setFormData] = useState({
+    consentAgreed: false, // <-- הוחזר כדי שישלח ל-Sheets
     age: '',
     gender: '',
     noVisionIssues: false,
@@ -66,7 +67,7 @@ export default function App() {
       
       await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors', // Required for Google Scripts without explicit CORS headers
+        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -80,7 +81,10 @@ export default function App() {
       <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow-lg border border-gray-200 min-h-[60vh] flex flex-col">
         
         {phase === 'consent' && (
-          <ConsentScreen onNext={() => setPhase('demographics')} />
+          <ConsentScreen 
+            updateFormData={updateFormData} // <-- הוחזר
+            onNext={() => setPhase('demographics')} 
+          />
         )}
         
         {phase === 'demographics' && (
@@ -147,26 +151,22 @@ export default function App() {
 }
 
 // ------------------------------------------------------------------
-// Sub-components for each phase of the experiment
+// Sub-components
 // ------------------------------------------------------------------
 
-function ConsentScreen({ onNext }) {
+function ConsentScreen({ updateFormData, onNext }) {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [isAgreed, setIsAgreed] = useState(false);
   const scrollRef = useRef(null);
 
-  // Function to detect when the user has scrolled to the bottom of the container
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-    
-    // Add a 5px buffer to account for rounding errors
     if (scrollTop + clientHeight >= scrollHeight - 5) {
       setHasScrolledToBottom(true);
     }
   };
 
-  // Check on mount if the content is too short to require scrolling
   useEffect(() => {
     if (scrollRef.current) {
       const { scrollHeight, clientHeight } = scrollRef.current;
@@ -276,7 +276,10 @@ function ConsentScreen({ onNext }) {
       </div>
 
       <button
-        onClick={onNext}
+        onClick={() => {
+          updateFormData({ consentAgreed: true }); // <-- שומר את ההסכמה ל-Sheets!
+          onNext();
+        }}
         disabled={!isAgreed}
         className="w-full bg-gray-800 text-white font-bold py-4 rounded-lg text-xl hover:bg-gray-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition shadow-md mt-auto"
       >
@@ -373,7 +376,8 @@ function CoverStoryScreen({ onNext }) {
       <h2 className="text-4xl font-bold mb-6 text-gray-900">מבחן זיכרון</h2>
       <p className="text-xl text-gray-700 mb-12 max-w-lg leading-relaxed">
         מיד תתחיל/י במטלת הזיכרון. המסך יטען ולאחר מכן יוצג בפניך סיפור קצר.
-        כדאי לשים לב לפרטים בסיפור – בסיום הקריאה יופיעו מספר שאלות קצרות      </p>
+        כדאי לשים לב לפרטים בסיפור – בסיום הקריאה יופיעו מספר שאלות קצרות.
+      </p>
       <button 
         onClick={onNext}
         className="bg-blue-600 text-white px-12 py-4 rounded-lg font-bold text-xl hover:bg-blue-700 transition shadow-lg"
@@ -388,7 +392,6 @@ function StimulusScreen({ condition, onNext }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
-    // Fallback timer
     const safetyTimer = setTimeout(() => {
       console.warn("Safety timeout. Video might be missing.");
       onNext();
@@ -418,7 +421,7 @@ function StimulusScreen({ condition, onNext }) {
 }
 
 function MemoryTaskScreen({ formData, updateFormData, onNext }) {
-  const [step, setStep] = useState('story'); // 'story' or 'questions'
+  const [step, setStep] = useState('story'); 
 
   const questions = [
     { id: 'q1', text: 'לאן דן הלך בבוקר?', options: ['לסופרמרקט', 'לבית קפה', 'לפארק', 'לבנק'] },
