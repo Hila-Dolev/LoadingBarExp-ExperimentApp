@@ -11,15 +11,15 @@ const CONDITIONS = [
 // Helper to assign a random condition
 const getRandomCondition = () => CONDITIONS[Math.floor(Math.random() * CONDITIONS.length)];
 
-// Helper to assign a condition (supports URL parameter override for exact balancing)
+// Helper to assign a condition, checking for an obfuscated numeric query parameter (?c=X)
 const getAssignedCondition = () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const forcedConditionId = urlParams.get('condition'); // Looks for ?condition=stuck-gray in the URL
+  const forcedConditionCode = urlParams.get('c'); // Looks for ?c=3 in the URL to hide intent
 
-  if (forcedConditionId) {
-    const matchedCondition = CONDITIONS.find(c => c.id === forcedConditionId);
+  if (forcedConditionCode) {
+    const matchedCondition = CONDITIONS.find(c => c.code === forcedConditionCode);
     if (matchedCondition) {
-      return matchedCondition; // Use the forced condition from URL
+      return matchedCondition; // Use the forced condition matching the numeric code
     }
   }
 
