@@ -11,6 +11,22 @@ const CONDITIONS = [
 // Helper to assign a random condition
 const getRandomCondition = () => CONDITIONS[Math.floor(Math.random() * CONDITIONS.length)];
 
+// Helper to assign a condition (supports URL parameter override for exact balancing)
+const getAssignedCondition = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const forcedConditionId = urlParams.get('condition'); // Looks for ?condition=stuck-gray in the URL
+
+  if (forcedConditionId) {
+    const matchedCondition = CONDITIONS.find(c => c.id === forcedConditionId);
+    if (matchedCondition) {
+      return matchedCondition; // Use the forced condition from URL
+    }
+  }
+
+  // Fallback to pure random assignment if no valid URL parameter is provided
+  return CONDITIONS[Math.floor(Math.random() * CONDITIONS.length)];
+};
+
 // Generate a random string for participant ID
 const generateParticipantId = () => Math.random().toString(36).substring(2, 10);
 
@@ -45,7 +61,7 @@ export default function App() {
   useEffect(() => {
     setParticipantData({
       id: generateParticipantId(),
-      condition: getRandomCondition()
+      condition: getAssignedCondition()
     });
   }, []);
 
