@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 
 // Define the 4 experimental conditions and their video paths
 const CONDITIONS = [
-  { id: 'linear-gray', videoUrl: '/videos/linear-gray.webm' },
-  { id: 'linear-red', videoUrl: '/videos/linear-red.webm' },
-  { id: 'stuck-gray', videoUrl: '/videos/stuck-gray.webm' },
-  { id: 'stuck-red', videoUrl: '/videos/stuck-red.webm' }
+  { id: 'linear-gray', code: '1', videoUrl: '/videos/linear-gray.webm' },
+  { id: 'linear-red', code: '2', videoUrl: '/videos/linear-red.webm' },
+  { id: 'stuck-gray', code: '3', videoUrl: '/videos/stuck-gray.webm' },
+  { id: 'stuck-red', code: '4', videoUrl: '/videos/stuck-red.webm' }
 ];
 
 // Helper to assign a random condition
@@ -14,7 +14,7 @@ const getRandomCondition = () => CONDITIONS[Math.floor(Math.random() * CONDITION
 // Helper to assign a condition, checking for an obfuscated numeric query parameter (?c=X)
 const getAssignedCondition = () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const forcedConditionCode = urlParams.get('c'); // Looks for ?c=3 in the URL to hide intent
+  const forcedConditionCode = urlParams.get('c'); 
 
   if (forcedConditionCode) {
     const matchedCondition = CONDITIONS.find(c => c.code === forcedConditionCode);
